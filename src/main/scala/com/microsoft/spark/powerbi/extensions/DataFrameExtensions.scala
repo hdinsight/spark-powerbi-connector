@@ -64,7 +64,7 @@ object DataFrameExtensions {
 
           group => {
 
-            val powerbiRowList: ListBuffer[Map[String, Any]] = ListBuffer[Map[String, Any]]()
+            val powerbiRowListBuffer: ListBuffer[Map[String, Any]] = ListBuffer[Map[String, Any]]()
 
             group.foreach {
 
@@ -72,27 +72,28 @@ object DataFrameExtensions {
 
                 var powerbiRow: Map[String, Any] = Map[String, Any]()
 
-                for (i <- 0 to record.length) {
+                for (i <- 0 to record.length - 1) {
 
-                  powerbiRow += (dataFrame.columns(i) -> record(i))
+                  powerbiRow += (powerbiTable.columns(i).name -> record(i))
                 }
 
-                powerbiRowList += powerbiRow
+                powerbiRowListBuffer += powerbiRow
               }
 
               try {
 
-                PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable, powerbiRowList.toList,
+                PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable, powerbiRowListBuffer,
                   authenticationToken)
               }
               catch {
 
                 case e: Exception => {
 
-                  println("Exception inserting multiple rows: " + e.getMessage())
+                  println(f"Exception inserting multiple rows: ${e.getMessage}")
 
                   authenticationToken = powerBIAuthentication.refreshAccessToken()
                 }
+
               }
             }
           }

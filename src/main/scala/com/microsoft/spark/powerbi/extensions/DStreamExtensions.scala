@@ -114,7 +114,7 @@ object DStreamExtensions {
 
                   try {
 
-                    PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable, powerbiRowList.toList,
+                    PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable, powerbiRowList,
                       authenticationToken)
                   }
                   catch {

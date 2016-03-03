@@ -105,8 +105,7 @@ object RDDExtensions {
 
               try {
 
-                PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable, powerbiRowList.toList,
-                    authenticationToken)
+                PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable, powerbiRowList, authenticationToken)
               }
               catch {
 

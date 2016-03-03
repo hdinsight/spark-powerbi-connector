@@ -100,15 +100,15 @@ object PowerBIUtils {
     powerbiRows += columnNameValueMap
 
     PowerBIRowClient.add(PowerBIRows(powerbiRows.toList), powerbiTable.name, powerbiDatasetDetails.id,
-      authenticationToken, null)
+      authenticationToken, groupId)
   }
 
   def addMultipleRows(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
-                      columnNameValueMapList: List[Map[String, Any]], authenticationToken: String,
+                      powerbiRows: ListBuffer[Map[String, Any]], authenticationToken: String,
                       groupId: String = null): String = {
 
-    PowerBIRowClient.add(PowerBIRows(columnNameValueMapList), powerbiTable.name, powerbiDatasetDetails.id,
-      authenticationToken, null)
+    PowerBIRowClient.add(PowerBIRows(powerbiRows.toList), powerbiTable.name, powerbiDatasetDetails.id,
+      authenticationToken, groupId)
   }
 
 }
