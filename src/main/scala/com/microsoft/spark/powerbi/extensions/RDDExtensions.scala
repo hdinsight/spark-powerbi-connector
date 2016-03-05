@@ -21,8 +21,6 @@ import java.sql.{Timestamp}
 import java.util.Date
 import java.lang.reflect.Field
 
-import scala.reflect._
-import scala.reflect.runtime.{universe => runtimeUniverse}
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ListBuffer
@@ -31,37 +29,12 @@ import com.microsoft.spark.powerbi.authentication.PowerBIAuthentication
 import com.microsoft.spark.powerbi.models.{table, PowerBIDatasetDetails}
 import com.microsoft.spark.powerbi.common.PowerBIUtils
 
-
 object RDDExtensions {
 
-  implicit def PowerBIRDD[A: runtimeUniverse.TypeTag](rdd: RDD[A]): PowerBIRDD[A] = new PowerBIRDD(rdd: RDD[A])
+  implicit def PowerBIRDD[A](rdd: RDD[A]): PowerBIRDD[A] = new PowerBIRDD(rdd: RDD[A])
 
-  class PowerBIRDD[A: runtimeUniverse.TypeTag](rdd: RDD[A]) extends Serializable{
+  class PowerBIRDD[A](rdd: RDD[A]) {
 
-    def getFieldValueMap[A: runtimeUniverse.TypeTag](anyObject: A)
-                                                            (implicit classTag: ClassTag[A]): Map[String, Any] = {
-
-      var fieldValueMap: Map[String, Any] = Map[String, Any]()
-
-      val objectFields: Array[Field] = anyObject.getClass().getDeclaredFields()
-
-      objectFields.foreach(objectField => {
-
-        val nameSymbol = runtimeUniverse.typeOf[A]
-          .declaration(runtimeUniverse.stringToTermName(objectField.getName)).asTerm
-
-        val typeMirror = runtimeUniverse.runtimeMirror(anyObject.getClass.getClassLoader)
-
-        val instanceMirror = typeMirror.reflect[A](anyObject)(classTag)
-
-        val fieldMirror = instanceMirror.reflectField(nameSymbol)
-
-        fieldValueMap += (objectField.getName -> fieldMirror.get)
-
-      })
-
-      fieldValueMap
-    }
 
     def countTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                        powerBIAuthentication: PowerBIAuthentication): Unit = {
@@ -82,9 +55,11 @@ object RDDExtensions {
     }
 
     def toPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
-                  powerBIAuthentication: PowerBIAuthentication)(implicit classTag: ClassTag[A]): Unit = {
+                  powerBIAuthentication: PowerBIAuthentication) : Unit = {
 
       var authenticationToken: String = powerBIAuthentication.getAccessToken()
+
+      val powerbiTableColumnNames: List[String] = powerbiTable.columns.map(x => x.name)
 
       rdd.foreachPartition { partition =>
 
@@ -100,7 +75,22 @@ object RDDExtensions {
 
               record => {
 
-                powerbiRowList += getFieldValueMap(record)
+                powerbiRowList += (Map[String, Any]() /: record.getClass.getDeclaredFields) {
+
+                  (objectFieldValueMap: Map[String, Any], objectField: Field) => {
+
+                    objectField.setAccessible(true)
+
+                    if (powerbiTableColumnNames.exists(x => x.equalsIgnoreCase(objectField.getName))) {
+
+                      objectFieldValueMap + (objectField.getName -> objectField.get(record))
+
+                    } else {
+
+                      objectFieldValueMap
+                    }
+                  }
+                }
               }
 
               try {
