@@ -26,14 +26,12 @@ import org.apache.spark.streaming.dstream.DStream
 
 import com.microsoft.spark.powerbi.models.{table, PowerBIDatasetDetails}
 
-import scala.reflect.runtime.{universe => runtimeUniverse}
-
 object PairedDStreamExtensions {
 
-  implicit def PowerBIPairedDStream[A, B: runtimeUniverse.TypeTag](dStream: DStream[(A, B)]): PowerBIPairedDStream[A, B]
+  implicit def PowerBIPairedDStream[A, B](dStream: DStream[(A, B)]): PowerBIPairedDStream[A, B]
   = new PowerBIPairedDStream(dStream: DStream[(A, B)])
 
-  class PowerBIPairedDStream[A, B: runtimeUniverse.TypeTag](dStream: DStream[(A, B)]) extends Serializable {
+  class PowerBIPairedDStream[A, B](dStream: DStream[(A, B)]) extends Serializable {
 
     def stateTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                        powerBIAuthentication: PowerBIAuthentication): Unit = {
@@ -44,7 +42,7 @@ object PairedDStreamExtensions {
 
           val currentTimestamp = new Timestamp(new Date().getTime())
 
-          val powerbiRow = Map(powerbiTable.columns(0).name -> currentTimestamp,
+          val powerbiRow = Map(powerbiTable.columns.head.name -> currentTimestamp,
             powerbiTable.columns(1).name -> x.first()._2)
 
           try {

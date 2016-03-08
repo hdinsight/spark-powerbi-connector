@@ -28,68 +28,20 @@ import org.apache.spark.streaming.dstream.DStream
 import com.microsoft.spark.powerbi.models.{table, PowerBIDatasetDetails}
 import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
-import scala.reflect.runtime.{universe => runtimeUniverse}
 
 object DStreamExtensions {
 
-  implicit def PowerBIDStream[A: runtimeUniverse.TypeTag](dStream: DStream[A]): PowerBIDStream[A]
+  implicit def PowerBIDStream[A](dStream: DStream[A]): PowerBIDStream[A]
   = new PowerBIDStream(dStream: DStream[A])
 
-  class PowerBIDStream[A: runtimeUniverse.TypeTag](dStream: DStream[A]) extends Serializable {
-
-    def getFieldValueMap[A: runtimeUniverse.TypeTag](anyObject: A)
-                                                    (implicit classTag: ClassTag[A]): Map[String, Any] = {
-
-      var fieldValueMap: Map[String, Any] = Map[String, Any]()
-
-      val objectFields: Array[Field] = anyObject.getClass().getDeclaredFields()
-
-      objectFields.foreach(objectField => {
-
-        val nameSymbol = runtimeUniverse.typeOf[A]
-          .declaration(runtimeUniverse.stringToTermName(objectField.getName)).asTerm
-
-        val typeMirror = runtimeUniverse.runtimeMirror(anyObject.getClass.getClassLoader)
-
-        val instanceMirror = typeMirror.reflect[A](anyObject)(classTag)
-
-        val fieldMirror = instanceMirror.reflectField(nameSymbol)
-
-        fieldValueMap += (objectField.getName -> fieldMirror.get)
-
-      })
-
-      fieldValueMap
-    }
-
-    def countTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
-                       powerBIAuthentication: PowerBIAuthentication): Unit = {
-
-      dStream.foreachRDD {
-
-        rdd => {
-
-          val currentTimestamp = new Timestamp(new Date().getTime())
-
-          val powerbiRow = Map(powerbiTable.columns(0).name -> currentTimestamp,
-            powerbiTable.columns(1).name -> rdd.count())
-
-          try {
-
-            PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken())
-          }
-          catch {
-
-            case e: Exception => println("Exception inserting row: " + e.getMessage())
-          }
-        }
-      }
-    }
+  class PowerBIDStream[A](dStream: DStream[A]) extends Serializable {
 
     def toPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                   powerBIAuthentication: PowerBIAuthentication)(implicit classTag: ClassTag[A]): Unit = {
 
       var authenticationToken: String = powerBIAuthentication.getAccessToken()
+
+      val powerbiTableColumnNames: List[String] = powerbiTable.columns.map(x => x.name)
 
       dStream.foreachRDD {
 
@@ -109,7 +61,22 @@ object DStreamExtensions {
 
                   record => {
 
-                    powerbiRowList += getFieldValueMap(record)
+                    powerbiRowList += (Map[String, Any]() /: record.getClass.getDeclaredFields) {
+
+                      (objectFieldValueMap: Map[String, Any], objectField: Field) => {
+
+                        objectField.setAccessible(true)
+
+                        if (powerbiTableColumnNames.exists(x => x.equalsIgnoreCase(objectField.getName))) {
+
+                          objectFieldValueMap + (objectField.getName -> objectField.get(record))
+
+                        } else {
+
+                          objectFieldValueMap
+                        }
+                      }
+                    }
                   }
 
                   try {
@@ -129,6 +96,30 @@ object DStreamExtensions {
                 }
               }
             }
+          }
+        }
+      }
+    }
+
+    def countTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
+                               powerBIAuthentication: PowerBIAuthentication): Unit = {
+
+      dStream.foreachRDD {
+
+        rdd => {
+
+          val currentTimestamp = new Timestamp(new Date().getTime())
+
+          val powerbiRow = Map(powerbiTable.columns(0).name -> currentTimestamp,
+            powerbiTable.columns(1).name -> rdd.count())
+
+          try {
+
+            PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken())
+          }
+          catch {
+
+            case e: Exception => println("Exception inserting row: " + e.getMessage())
           }
         }
       }

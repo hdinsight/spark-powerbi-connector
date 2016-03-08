@@ -33,24 +33,6 @@ object DataFrameExtensions {
 
   class PowerBIDataFrame(dataFrame: DataFrame) extends Serializable{
 
-    def countTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
-                       powerBIAuthentication: PowerBIAuthentication): Unit = {
-
-      val currentTimestamp = new Timestamp(new Date().getTime())
-
-      val  powerbiRow = Map(powerbiTable.columns(0).name -> currentTimestamp,
-        powerbiTable.columns(1).name -> dataFrame.count())
-
-      try {
-
-        PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken())
-      }
-      catch {
-
-        case e: Exception => println("Exception inserting row: " + e.getMessage())
-      }
-    }
-
     def toPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                   powerBIAuthentication: PowerBIAuthentication): Unit = {
 
@@ -72,7 +54,7 @@ object DataFrameExtensions {
 
                 var powerbiRow: Map[String, Any] = Map[String, Any]()
 
-                for (i <- 0 to record.length - 1) {
+                for (i <- 0 until record.length - 1) {
 
                   powerbiRow += (powerbiTable.columns(i).name -> record(i))
                 }
@@ -93,11 +75,28 @@ object DataFrameExtensions {
 
                   authenticationToken = powerBIAuthentication.refreshAccessToken()
                 }
-
               }
             }
           }
         }
+      }
+    }
+
+    def countTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
+                               powerBIAuthentication: PowerBIAuthentication): Unit = {
+
+      val currentTimestamp = new Timestamp(new Date().getTime())
+
+      val  powerbiRow = Map(powerbiTable.columns.head.name -> currentTimestamp,
+        powerbiTable.columns(1).name -> dataFrame.count())
+
+      try {
+
+        PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken())
+      }
+      catch {
+
+        case e: Exception => println("Exception inserting row: " + e.getMessage())
       }
     }
   }

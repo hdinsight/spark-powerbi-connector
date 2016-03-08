@@ -56,7 +56,6 @@ object PowerBIUtils {
     powerbiDatasetDetailsList.value.find(x => x.name.equalsIgnoreCase(powerbiDatasetName)).getOrElse(null)
   }
 
-
   def getOrCreateDataset(powerbiDatasetName: String, powerbiTables: List[table],
                          retentionPolicy: PowerBIOptions.DatasetRetentionPolicy = PowerBIOptions.basicFIFO,
                          authenticationToken: String, groupId: String = null): PowerBIDatasetDetails = {
@@ -110,5 +109,4 @@ object PowerBIUtils {
     PowerBIRowClient.add(PowerBIRows(powerbiRows.toList), powerbiTable.name, powerbiDatasetDetails.id,
       authenticationToken, groupId)
   }
-
 }

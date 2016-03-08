@@ -35,25 +35,6 @@ object RDDExtensions {
 
   class PowerBIRDD[A](rdd: RDD[A]) {
 
-
-    def countTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
-                       powerBIAuthentication: PowerBIAuthentication): Unit = {
-
-      val currentTimestamp = new Timestamp(new Date().getTime())
-
-      val powerbiRow = Map(powerbiTable.columns(0).name -> currentTimestamp,
-        powerbiTable.columns(1).name -> rdd.count())
-
-      try {
-
-        PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken())
-      }
-      catch {
-
-        case e: Exception => println("Exception inserting row: " + e.getMessage())
-      }
-    }
-
     def toPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                   powerBIAuthentication: PowerBIAuthentication) : Unit = {
 
@@ -109,6 +90,24 @@ object RDDExtensions {
             }
           }
         }
+      }
+    }
+
+    def countTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
+                               powerBIAuthentication: PowerBIAuthentication): Unit = {
+
+      val currentTimestamp = new Timestamp(new Date().getTime())
+
+      val powerbiRow = Map(powerbiTable.columns.head.name -> currentTimestamp,
+        powerbiTable.columns(1).name -> rdd.count())
+
+      try {
+
+        PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken())
+      }
+      catch {
+
+        case e: Exception => println("Exception inserting row: " + e.getMessage())
       }
     }
   }
