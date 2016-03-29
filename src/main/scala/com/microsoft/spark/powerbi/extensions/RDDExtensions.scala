@@ -33,7 +33,7 @@ object RDDExtensions {
 
   implicit def PowerBIRDD[A](rdd: RDD[A]): PowerBIRDD[A] = new PowerBIRDD(rdd: RDD[A])
 
-  class PowerBIRDD[A](rdd: RDD[A]) {
+  class PowerBIRDD[A](rdd: RDD[A]) extends Serializable{
 
     def toPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                   powerBIAuthentication: PowerBIAuthentication) : Unit = {

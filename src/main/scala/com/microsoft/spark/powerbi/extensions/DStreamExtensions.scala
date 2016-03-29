@@ -37,7 +37,7 @@ object DStreamExtensions {
   class PowerBIDStream[A](dStream: DStream[A]) extends Serializable {
 
     def toPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
-                  powerBIAuthentication: PowerBIAuthentication)(implicit classTag: ClassTag[A]): Unit = {
+                  powerBIAuthentication: PowerBIAuthentication): Unit = {
 
       var authenticationToken: String = powerBIAuthentication.getAccessToken()
 
