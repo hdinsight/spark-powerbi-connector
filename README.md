@@ -11,8 +11,8 @@ This is the source code of Spark to PowerBI connector using PowerBI REST client.
       <url>https://raw.github.com/hdinsight/spark-powerbi-connector/maven-repo/</url>
       <snapshots>
         <enabled>true</enabled>
-          <updatePolicy>always</updatePolicy>
-        </snapshots>
+        <updatePolicy>always</updatePolicy>
+      </snapshots>
     </repository>
 
 #### Dependency
