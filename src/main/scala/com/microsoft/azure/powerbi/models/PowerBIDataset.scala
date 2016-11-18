@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.common
+package com.microsoft.azure.powerbi.models
 
-object PowerBIOptions extends Enumeration {
+case class column(name: String, dataType: String)
 
-  type DatasetRetentionPolicy = Value
-  val Undefined, None, basicFIFO = Value
-}
+case class table(name: String, columns: List[column])
+
+case class PowerBIDataset(name: String, tables: List[table])
+
+case class PowerBIRows(rows: List[Map[String, Any]])

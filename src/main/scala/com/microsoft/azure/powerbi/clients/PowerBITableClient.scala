@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.clients
+package com.microsoft.azure.powerbi.clients
 
 import org.json4s.ShortTypeHints
 import org.json4s.native.Serialization
@@ -23,106 +23,25 @@ import org.json4s.native.Serialization._
 import org.apache.http.client.methods._
 import org.apache.http.entity.StringEntity
 
-import com.microsoft.spark.powerbi.models._
-import com.microsoft.spark.powerbi.common._
-import com.microsoft.spark.powerbi.exceptions._
+import com.microsoft.azure.powerbi.models._
+import com.microsoft.azure.powerbi.common._
+import com.microsoft.azure.powerbi.exceptions._
 
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder}
 
-object PowerBIDatasetClient {
+object PowerBITableClient {
 
-  def create(powerBIDataset: PowerBIDataset, retentionPolicy: PowerBIOptions.DatasetRetentionPolicy
-             = PowerBIOptions.Undefined, authenticationToken: String, groupId: String = null): PowerBIDatasetDetails = {
-
-    implicit val formats = Serialization.formats(
-      ShortTypeHints(
-        List()
-      )
-    )
-
-    var postRequestURL: String = null
-
-    if(groupId == null || groupId.trim.isEmpty) {
-
-      postRequestURL = PowerBIURLs.Datasets
-
-    } else {
-
-      postRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets"
-    }
-
-    if(retentionPolicy != null) {
-
-      retentionPolicy match {
-
-        case PowerBIOptions.None | PowerBIOptions.basicFIFO => {
-
-          postRequestURL += f"?defaultRetentionPolicy=" + retentionPolicy.toString()
-
-        }
-      }
-    }
-
-    val postRequest: HttpPost = new HttpPost(postRequestURL)
-
-    postRequest.addHeader("Authorization", f"Bearer $authenticationToken")
-    postRequest.addHeader("Content-Type", "application/json")
-
-    postRequest.setEntity(new StringEntity(write(powerBIDataset)))
-
-    val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
-
-    var responseContent: String = null
-    var statusCode: Int = -1
-    var exceptionMessage: String = null
-
-    try {
-
-      val httpResponse = httpClient.execute(postRequest)
-      statusCode = httpResponse.getStatusLine().getStatusCode()
-
-      val responseEntity = httpResponse.getEntity()
-
-      if (responseEntity != null) {
-
-        val inputStream = responseEntity.getContent()
-        responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
-        inputStream.close
-      }
-    }
-    catch {
-
-      case e: Exception => exceptionMessage = e.getMessage
-    }
-    finally {
-      httpClient.close()
-    }
-
-    if(statusCode == 200 || statusCode == 201) {
-
-      implicit val formats = Serialization.formats(
-        ShortTypeHints(
-          List()
-        )
-      )
-
-      return read[PowerBIDatasetDetails](responseContent)
-    }
-
-    throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)
-  }
-
-  def get(authenticationToken: String, groupId: String = null): PowerBIDatasetDetailsList = {
+  def get(datasetId: String, authenticationToken: String, groupId: String = null): PowerBITableDetailsList = {
 
     var getRequestURL: String = null
 
     if(groupId == null || groupId.trim.isEmpty) {
 
-      getRequestURL = PowerBIURLs.Datasets
+      getRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables"
 
     } else {
 
-      getRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets"
+      getRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables"
     }
 
     val getRequest: HttpGet = new HttpGet(getRequestURL)
@@ -136,9 +55,7 @@ object PowerBIDatasetClient {
     var exceptionMessage: String = null
 
     try {
-
       val httpResponse = httpClient.execute(getRequest)
-
       statusCode = httpResponse.getStatusLine().getStatusCode()
 
       val responseEntity = httpResponse.getEntity()
@@ -167,7 +84,73 @@ object PowerBIDatasetClient {
         )
       )
 
-      return read[PowerBIDatasetDetailsList](responseContent)
+      return read[PowerBITableDetailsList](responseContent)
+    }
+
+    throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)
+  }
+
+  def updateSchema(powerBITable: table, datasetId: String, authenticationToken: String,
+                   groupId: String = null): PowerBITableDetails = {
+
+    implicit val formats = Serialization.formats(
+      ShortTypeHints(
+        List()
+      )
+    )
+
+    var postRequestURL: String = null
+
+    val tableName: String = powerBITable.name
+
+    if(groupId == null || groupId.trim.isEmpty) {
+
+      postRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables/$tableName"
+
+    } else {
+
+      postRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables/$tableName"
+    }
+
+    val putRequest: HttpPut = new HttpPut(postRequestURL)
+
+    putRequest.addHeader("Authorization", f"Bearer $authenticationToken")
+    putRequest.addHeader("Content-Type", "application/json")
+
+    putRequest.setEntity(new StringEntity(write(powerBITable)))
+
+    val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
+
+    var responseContent: String = null
+    var statusCode: Int = -1
+    var exceptionMessage: String = null
+
+    try {
+
+      val httpResponse = httpClient.execute(putRequest)
+      statusCode = httpResponse.getStatusLine().getStatusCode()
+
+      val responseEntity = httpResponse.getEntity()
+
+      if (responseEntity != null) {
+
+        val inputStream = responseEntity.getContent()
+        responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
+        inputStream.close
+      }
+    }
+    catch {
+
+      case e: Exception => exceptionMessage = e.getMessage
+    }
+    finally {
+
+      httpClient.close()
+    }
+
+    if(statusCode == 200 || statusCode == 201) {
+
+      return read[PowerBITableDetails](responseContent)
     }
 
     throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)

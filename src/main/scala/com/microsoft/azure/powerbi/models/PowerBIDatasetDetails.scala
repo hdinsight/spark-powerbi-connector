@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.models
+package com.microsoft.azure.powerbi.models
 
 case class PowerBIDatasetDetails(id: String, name: String)
 case class PowerBIDatasetDetailsList(value: List[PowerBIDatasetDetails])

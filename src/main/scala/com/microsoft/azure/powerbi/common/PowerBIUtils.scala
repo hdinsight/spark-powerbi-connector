@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.common
+package com.microsoft.azure.powerbi.common
 
-import com.microsoft.spark.powerbi.clients._
-import com.microsoft.spark.powerbi.models._
-import com.microsoft.spark.powerbi.exceptions._
+import com.microsoft.azure.powerbi.clients._
+import com.microsoft.azure.powerbi.models._
+import com.microsoft.azure.powerbi.exceptions._
 
 import scala.collection.mutable.ListBuffer
 

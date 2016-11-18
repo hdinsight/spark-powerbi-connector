@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.clients
+package com.microsoft.azure.powerbi.clients
 
 import org.json4s.ShortTypeHints
 import org.json4s.native.Serialization
@@ -23,16 +23,16 @@ import org.json4s.native.Serialization._
 import org.apache.http.client.methods._
 import org.apache.http.entity.StringEntity
 
-import com.microsoft.spark.powerbi.models._
-import com.microsoft.spark.powerbi.common._
-import com.microsoft.spark.powerbi.exceptions._
+import com.microsoft.azure.powerbi.models._
+import com.microsoft.azure.powerbi.common._
+import com.microsoft.azure.powerbi.exceptions._
 
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder}
 
-object PowerBIRowClient {
+object PowerBIDatasetClient {
 
-  def add(powerBIRows: PowerBIRows, tableName: String, datasetId: String, authenticationToken: String,
-          groupId: String = null): String = {
+  def create(powerBIDataset: PowerBIDataset, retentionPolicy: PowerBIOptions.DatasetRetentionPolicy
+             = PowerBIOptions.Undefined, authenticationToken: String, groupId: String = null): PowerBIDatasetDetails = {
 
     implicit val formats = Serialization.formats(
       ShortTypeHints(
@@ -44,11 +44,23 @@ object PowerBIRowClient {
 
     if(groupId == null || groupId.trim.isEmpty) {
 
-      postRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables/$tableName/rows"
+      postRequestURL = PowerBIURLs.Datasets
 
     } else {
 
-      postRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables/$tableName/rows"
+      postRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets"
+    }
+
+    if(retentionPolicy != null) {
+
+      retentionPolicy match {
+
+        case PowerBIOptions.None | PowerBIOptions.basicFIFO => {
+
+          postRequestURL += f"?defaultRetentionPolicy=" + retentionPolicy.toString()
+
+        }
+      }
     }
 
     val postRequest: HttpPost = new HttpPost(postRequestURL)
@@ -56,7 +68,7 @@ object PowerBIRowClient {
     postRequest.addHeader("Authorization", f"Bearer $authenticationToken")
     postRequest.addHeader("Content-Type", "application/json")
 
-    postRequest.setEntity(new StringEntity(write(powerBIRows)))
+    postRequest.setEntity(new StringEntity(write(powerBIDataset)))
 
     val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
 
@@ -65,6 +77,7 @@ object PowerBIRowClient {
     var exceptionMessage: String = null
 
     try {
+
       val httpResponse = httpClient.execute(postRequest)
       statusCode = httpResponse.getStatusLine().getStatusCode()
 
@@ -82,40 +95,39 @@ object PowerBIRowClient {
       case e: Exception => exceptionMessage = e.getMessage
     }
     finally {
-
       httpClient.close()
     }
 
-    if (statusCode == 200 || statusCode == 201) {
+    if(statusCode == 200 || statusCode == 201) {
 
-      return responseContent
+      implicit val formats = Serialization.formats(
+        ShortTypeHints(
+          List()
+        )
+      )
+
+      return read[PowerBIDatasetDetails](responseContent)
     }
 
     throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)
   }
 
-  def delete(tableName: String, datasetId: String, authenticationToken: String, groupId: String = null): String = {
+  def get(authenticationToken: String, groupId: String = null): PowerBIDatasetDetailsList = {
 
-    implicit val formats = Serialization.formats(
-      ShortTypeHints(
-        List()
-      )
-    )
-
-    var deleteRequestURL: String = null
+    var getRequestURL: String = null
 
     if(groupId == null || groupId.trim.isEmpty) {
 
-      deleteRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables/$tableName/rows"
+      getRequestURL = PowerBIURLs.Datasets
 
     } else {
 
-      deleteRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables/$tableName/rows"
+      getRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets"
     }
 
-    val deleteRequest: HttpDelete = new HttpDelete(deleteRequestURL)
+    val getRequest: HttpGet = new HttpGet(getRequestURL)
 
-    deleteRequest.addHeader("Authorization", f"Bearer $authenticationToken")
+    getRequest.addHeader("Authorization", f"Bearer $authenticationToken")
 
     val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
 
@@ -124,7 +136,9 @@ object PowerBIRowClient {
     var exceptionMessage: String = null
 
     try {
-      val httpResponse = httpClient.execute(deleteRequest)
+
+      val httpResponse = httpClient.execute(getRequest)
+
       statusCode = httpResponse.getStatusLine().getStatusCode()
 
       val responseEntity = httpResponse.getEntity()
@@ -145,10 +159,15 @@ object PowerBIRowClient {
       httpClient.close()
     }
 
-
     if(statusCode == 200) {
 
-      return responseContent
+      implicit val formats = Serialization.formats(
+        ShortTypeHints(
+          List()
+        )
+      )
+
+      return read[PowerBIDatasetDetailsList](responseContent)
     }
 
     throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)

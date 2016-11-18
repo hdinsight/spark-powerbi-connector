@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.extensions
+package com.microsoft.azure.powerbi.extensions
 
 import java.lang.reflect.Field
 import java.sql.Timestamp
 import java.util.Date
 
-import com.microsoft.spark.powerbi.authentication.PowerBIAuthentication
-import com.microsoft.spark.powerbi.common.PowerBIUtils
+import com.microsoft.azure.powerbi.authentication.PowerBIAuthentication
+import com.microsoft.azure.powerbi.common.PowerBIUtils
 import org.apache.spark.streaming.dstream.DStream
 
-import com.microsoft.spark.powerbi.models.{table, PowerBIDatasetDetails}
+import com.microsoft.azure.powerbi.models.{table, PowerBIDatasetDetails}
 import scala.collection.mutable.ListBuffer
 import scala.reflect.ClassTag
 

@@ -15,16 +15,11 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.common
+package com.microsoft.azure.powerbi.common
 
-object PowerBIURLs {
+object PowerBIClientConstants {
 
-  val Resource = "https://analysis.windows.net/powerbi/api"
-  val Authority = "https://login.windows.net/common/oauth2/authorize"
-  val Datasets = "https://api.powerbi.com/v1.0/myorg/datasets"
-  val Groups = "https://api.powerbi.com/v1.0/myorg/groups"
-  val DashboardsBeta = "https://api.powerbi.com/beta/myorg/dashboards"
-  val GroupsBeta = "https://api.powerbi.com/beta/myorg/groups"
-  val ReportsBeta = "https://api.powerbi.com/beta/myorg/reports"
-
+  final val sockectTimeoutInSeconds: Int = 60
+  final val connectionTimeoutInSeconds: Int = 60
+  final val connectionRequestTimeoutInSeconds: Int = 60
 }

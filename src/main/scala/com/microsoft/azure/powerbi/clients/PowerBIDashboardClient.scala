@@ -15,22 +15,27 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.clients
+package com.microsoft.azure.powerbi.clients
 
 import org.json4s.ShortTypeHints
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization._
 import org.apache.http.client.methods._
 
-import com.microsoft.spark.powerbi.models._
-import com.microsoft.spark.powerbi.common._
-import com.microsoft.spark.powerbi.exceptions._
+import com.microsoft.azure.powerbi.models._
+import com.microsoft.azure.powerbi.common._
+import com.microsoft.azure.powerbi.exceptions._
 
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder}
 
-object PowerBITileClient {
+object PowerBIDashboardClient {
 
-  def get(dashboardId: String, authenticationToken: String, groupId: String = null): PowerBITileDetailsList = {
+  def get(authenticationToken: String): PowerBIDashboardDetailsList = {
+
+    get(authenticationToken, null)
+  }
+
+  def get(authenticationToken: String, groupId: String): PowerBIDashboardDetailsList = {
 
     implicit val formats = Serialization.formats(
       ShortTypeHints(
@@ -42,11 +47,11 @@ object PowerBITileClient {
 
     if(groupId == null || groupId.trim.isEmpty) {
 
-      getRequestURL = PowerBIURLs.DashboardsBeta + s"/dashboards/$dashboardId/tiles"
+      getRequestURL = PowerBIURLs.DashboardsBeta
 
     } else {
 
-      getRequestURL = PowerBIURLs.GroupsBeta + f"/$groupId/dashboards/$dashboardId/tiles"
+      getRequestURL = PowerBIURLs.GroupsBeta + f"/$groupId/dashboards"
     }
 
     val getRequest: HttpGet = new HttpGet(getRequestURL)
@@ -62,6 +67,7 @@ object PowerBITileClient {
     try {
 
       val httpResponse = httpClient.execute(getRequest)
+
       statusCode = httpResponse.getStatusLine().getStatusCode()
 
       val responseEntity = httpResponse.getEntity()
@@ -84,7 +90,7 @@ object PowerBITileClient {
 
     if (statusCode == 200) {
 
-      return read[PowerBITileDetailsList](responseContent)
+      return read[PowerBIDashboardDetailsList](responseContent)
     }
 
     throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)

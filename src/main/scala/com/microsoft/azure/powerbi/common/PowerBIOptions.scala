@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.common
+package com.microsoft.azure.powerbi.common
 
-object PowerBIDataTypes extends Enumeration {
+object PowerBIOptions extends Enumeration {
 
-  val Boolean, String, Int64, Double, DateTime = Value
-
+  type DatasetRetentionPolicy = Value
+  val Undefined, None, basicFIFO = Value
 }

@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.clients
+package com.microsoft.azure.powerbi.clients
 
 import org.json4s.ShortTypeHints
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization._
 import org.apache.http.client.methods._
 
-import com.microsoft.spark.powerbi.models._
-import com.microsoft.spark.powerbi.common._
-import com.microsoft.spark.powerbi.exceptions._
+import com.microsoft.azure.powerbi.models._
+import com.microsoft.azure.powerbi.common._
+import com.microsoft.azure.powerbi.exceptions._
 
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder}
 
-object PowerBIReportClient {
+object PowerBIGroupClient {
 
-  def get(dashboardId: String, authenticationToken: String, groupId: String = null): PowerBIReportDetailsList = {
+  def get(datasetId: String, authenticationToken: String): PowerBIGroupDetailsList = {
 
     implicit val formats = Serialization.formats(
       ShortTypeHints(
@@ -38,18 +38,7 @@ object PowerBIReportClient {
       )
     )
 
-    var getRequestURL: String = null
-
-    if(groupId == null || groupId.trim.isEmpty) {
-
-      getRequestURL = PowerBIURLs.ReportsBeta
-
-    } else {
-
-      getRequestURL = PowerBIURLs.GroupsBeta + f"/$groupId/reports"
-    }
-
-    val getRequest: HttpGet = new HttpGet(getRequestURL)
+    val getRequest: HttpGet = new HttpGet(PowerBIURLs.Groups)
 
     getRequest.addHeader("Authorization", f"Bearer $authenticationToken")
 
@@ -60,6 +49,7 @@ object PowerBIReportClient {
     var exceptionMessage: String = null
 
     try {
+
       val httpResponse = httpClient.execute(getRequest)
       statusCode = httpResponse.getStatusLine().getStatusCode()
 
@@ -72,7 +62,7 @@ object PowerBIReportClient {
         inputStream.close
       }
     }
-    catch {
+    catch{
 
       case e: Exception => exceptionMessage = e.getMessage
     }
@@ -83,7 +73,7 @@ object PowerBIReportClient {
 
     if (statusCode == 200) {
 
-      return read[PowerBIReportDetailsList](responseContent)
+      return read[PowerBIGroupDetailsList](responseContent)
     }
 
     throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)

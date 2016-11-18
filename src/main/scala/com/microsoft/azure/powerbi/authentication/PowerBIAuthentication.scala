@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.authentication
+package com.microsoft.azure.powerbi.authentication
 
 import java.util.concurrent.{ExecutorService, Executors, Future}
 import javax.naming.ServiceUnavailableException

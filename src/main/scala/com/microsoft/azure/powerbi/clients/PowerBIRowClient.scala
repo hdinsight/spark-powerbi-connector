@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.clients
+package com.microsoft.azure.powerbi.clients
 
 import org.json4s.ShortTypeHints
 import org.json4s.native.Serialization
@@ -23,75 +23,16 @@ import org.json4s.native.Serialization._
 import org.apache.http.client.methods._
 import org.apache.http.entity.StringEntity
 
-import com.microsoft.spark.powerbi.models._
-import com.microsoft.spark.powerbi.common._
-import com.microsoft.spark.powerbi.exceptions._
+import com.microsoft.azure.powerbi.models._
+import com.microsoft.azure.powerbi.common._
+import com.microsoft.azure.powerbi.exceptions._
 
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder}
 
-object PowerBITableClient {
+object PowerBIRowClient {
 
-  def get(datasetId: String, authenticationToken: String, groupId: String = null): PowerBITableDetailsList = {
-
-    var getRequestURL: String = null
-
-    if(groupId == null || groupId.trim.isEmpty) {
-
-      getRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables"
-
-    } else {
-
-      getRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables"
-    }
-
-    val getRequest: HttpGet = new HttpGet(getRequestURL)
-
-    getRequest.addHeader("Authorization", f"Bearer $authenticationToken")
-
-    val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
-
-    var responseContent: String = null
-    var statusCode: Int = -1
-    var exceptionMessage: String = null
-
-    try {
-      val httpResponse = httpClient.execute(getRequest)
-      statusCode = httpResponse.getStatusLine().getStatusCode()
-
-      val responseEntity = httpResponse.getEntity()
-
-      if (responseEntity != null) {
-
-        val inputStream = responseEntity.getContent()
-        responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
-        inputStream.close
-      }
-    }
-    catch {
-
-      case e: Exception => exceptionMessage = e.getMessage
-    }
-    finally {
-
-      httpClient.close()
-    }
-
-    if(statusCode == 200) {
-
-      implicit val formats = Serialization.formats(
-        ShortTypeHints(
-          List()
-        )
-      )
-
-      return read[PowerBITableDetailsList](responseContent)
-    }
-
-    throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)
-  }
-
-  def updateSchema(powerBITable: table, datasetId: String, authenticationToken: String,
-                   groupId: String = null): PowerBITableDetails = {
+  def add(powerBIRows: PowerBIRows, tableName: String, datasetId: String, authenticationToken: String,
+          groupId: String = null): String = {
 
     implicit val formats = Serialization.formats(
       ShortTypeHints(
@@ -101,23 +42,21 @@ object PowerBITableClient {
 
     var postRequestURL: String = null
 
-    val tableName: String = powerBITable.name
-
     if(groupId == null || groupId.trim.isEmpty) {
 
-      postRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables/$tableName"
+      postRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables/$tableName/rows"
 
     } else {
 
-      postRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables/$tableName"
+      postRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables/$tableName/rows"
     }
 
-    val putRequest: HttpPut = new HttpPut(postRequestURL)
+    val postRequest: HttpPost = new HttpPost(postRequestURL)
 
-    putRequest.addHeader("Authorization", f"Bearer $authenticationToken")
-    putRequest.addHeader("Content-Type", "application/json")
+    postRequest.addHeader("Authorization", f"Bearer $authenticationToken")
+    postRequest.addHeader("Content-Type", "application/json")
 
-    putRequest.setEntity(new StringEntity(write(powerBITable)))
+    postRequest.setEntity(new StringEntity(write(powerBIRows)))
 
     val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
 
@@ -126,8 +65,7 @@ object PowerBITableClient {
     var exceptionMessage: String = null
 
     try {
-
-      val httpResponse = httpClient.execute(putRequest)
+      val httpResponse = httpClient.execute(postRequest)
       statusCode = httpResponse.getStatusLine().getStatusCode()
 
       val responseEntity = httpResponse.getEntity()
@@ -148,9 +86,69 @@ object PowerBITableClient {
       httpClient.close()
     }
 
-    if(statusCode == 200 || statusCode == 201) {
+    if (statusCode == 200 || statusCode == 201) {
 
-      return read[PowerBITableDetails](responseContent)
+      return responseContent
+    }
+
+    throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)
+  }
+
+  def delete(tableName: String, datasetId: String, authenticationToken: String, groupId: String = null): String = {
+
+    implicit val formats = Serialization.formats(
+      ShortTypeHints(
+        List()
+      )
+    )
+
+    var deleteRequestURL: String = null
+
+    if(groupId == null || groupId.trim.isEmpty) {
+
+      deleteRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables/$tableName/rows"
+
+    } else {
+
+      deleteRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables/$tableName/rows"
+    }
+
+    val deleteRequest: HttpDelete = new HttpDelete(deleteRequestURL)
+
+    deleteRequest.addHeader("Authorization", f"Bearer $authenticationToken")
+
+    val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
+
+    var responseContent: String = null
+    var statusCode: Int = -1
+    var exceptionMessage: String = null
+
+    try {
+      val httpResponse = httpClient.execute(deleteRequest)
+      statusCode = httpResponse.getStatusLine().getStatusCode()
+
+      val responseEntity = httpResponse.getEntity()
+
+      if (responseEntity != null) {
+
+        val inputStream = responseEntity.getContent()
+        responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
+        inputStream.close
+      }
+    }
+    catch {
+
+      case e: Exception => exceptionMessage = e.getMessage
+    }
+    finally {
+
+      httpClient.close()
+    }
+
+
+    if(statusCode == 200) {
+
+      return responseContent
     }
 
     throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)

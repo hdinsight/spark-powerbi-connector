@@ -15,12 +15,24 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.models
+package com.microsoft.azure.powerbi.common
 
-case class column(name: String, dataType: String)
+import org.apache.http.client.config.RequestConfig
+import org.apache.http.impl.client.{HttpClients, CloseableHttpClient}
 
-case class table(name: String, columns: List[column])
+object HttpClientUtils {
 
-case class PowerBIDataset(name: String, tables: List[table])
+  def getCustomHttpClient(): CloseableHttpClient = {
 
-case class PowerBIRows(rows: List[Map[String, Any]])
+     val customRequestConfig: RequestConfig = RequestConfig.custom()
+      .setSocketTimeout(PowerBIClientConstants.sockectTimeoutInSeconds * 1000)
+      .setConnectTimeout(PowerBIClientConstants.connectionTimeoutInSeconds * 1000)
+      .setConnectionRequestTimeout(PowerBIClientConstants.connectionRequestTimeoutInSeconds * 1000)
+      .build()
+
+    val customHttpClient: CloseableHttpClient = HttpClients.custom()
+      .setDefaultRequestConfig(customRequestConfig).build()
+
+    customHttpClient
+  }
+}

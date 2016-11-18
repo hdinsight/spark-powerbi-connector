@@ -15,22 +15,22 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.clients
+package com.microsoft.azure.powerbi.clients
 
 import org.json4s.ShortTypeHints
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization._
 import org.apache.http.client.methods._
 
-import com.microsoft.spark.powerbi.models._
-import com.microsoft.spark.powerbi.common._
-import com.microsoft.spark.powerbi.exceptions._
+import com.microsoft.azure.powerbi.models._
+import com.microsoft.azure.powerbi.common._
+import com.microsoft.azure.powerbi.exceptions._
 
 import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder}
 
-object PowerBIGroupClient {
+object PowerBITileClient {
 
-  def get(datasetId: String, authenticationToken: String): PowerBIGroupDetailsList = {
+  def get(dashboardId: String, authenticationToken: String, groupId: String = null): PowerBITileDetailsList = {
 
     implicit val formats = Serialization.formats(
       ShortTypeHints(
@@ -38,7 +38,18 @@ object PowerBIGroupClient {
       )
     )
 
-    val getRequest: HttpGet = new HttpGet(PowerBIURLs.Groups)
+    var getRequestURL: String = null
+
+    if(groupId == null || groupId.trim.isEmpty) {
+
+      getRequestURL = PowerBIURLs.DashboardsBeta + s"/dashboards/$dashboardId/tiles"
+
+    } else {
+
+      getRequestURL = PowerBIURLs.GroupsBeta + f"/$groupId/dashboards/$dashboardId/tiles"
+    }
+
+    val getRequest: HttpGet = new HttpGet(getRequestURL)
 
     getRequest.addHeader("Authorization", f"Bearer $authenticationToken")
 
@@ -62,7 +73,7 @@ object PowerBIGroupClient {
         inputStream.close
       }
     }
-    catch{
+    catch {
 
       case e: Exception => exceptionMessage = e.getMessage
     }
@@ -73,7 +84,7 @@ object PowerBIGroupClient {
 
     if (statusCode == 200) {
 
-      return read[PowerBIGroupDetailsList](responseContent)
+      return read[PowerBITileDetailsList](responseContent)
     }
 
     throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.extensions
+package com.microsoft.azure.powerbi.extensions
 
 import java.sql.{Timestamp}
 import java.util.Date
@@ -23,9 +23,9 @@ import java.util.Date
 import scala.collection.mutable.ListBuffer
 import org.apache.spark.sql.DataFrame
 
-import com.microsoft.spark.powerbi.authentication.PowerBIAuthentication
-import com.microsoft.spark.powerbi.models.{table, PowerBIDatasetDetails}
-import com.microsoft.spark.powerbi.common.PowerBIUtils
+import com.microsoft.azure.powerbi.authentication.PowerBIAuthentication
+import com.microsoft.azure.powerbi.models.{table, PowerBIDatasetDetails}
+import com.microsoft.azure.powerbi.common.PowerBIUtils
 
 object DataFrameExtensions {
 

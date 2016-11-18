@@ -15,24 +15,10 @@
  * limitations under the License.
  */
 
-package com.microsoft.spark.powerbi.common
+package com.microsoft.azure.powerbi.common
 
-import org.apache.http.client.config.RequestConfig
-import org.apache.http.impl.client.{HttpClients, CloseableHttpClient}
+object PowerBIDataTypes extends Enumeration {
 
-object HttpClientUtils {
+  val Boolean, String, Int64, Double, DateTime = Value
 
-  def getCustomHttpClient(): CloseableHttpClient = {
-
-     val customRequestConfig: RequestConfig = RequestConfig.custom()
-      .setSocketTimeout(PowerBIClientConstants.sockectTimeoutInSeconds * 1000)
-      .setConnectTimeout(PowerBIClientConstants.connectionTimeoutInSeconds * 1000)
-      .setConnectionRequestTimeout(PowerBIClientConstants.connectionRequestTimeoutInSeconds * 1000)
-      .build()
-
-    val customHttpClient: CloseableHttpClient = HttpClients.custom()
-      .setDefaultRequestConfig(customRequestConfig).build()
-
-    customHttpClient
-  }
 }
