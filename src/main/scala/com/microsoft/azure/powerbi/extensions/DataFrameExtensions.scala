@@ -36,7 +36,7 @@ object DataFrameExtensions {
     def toPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                   powerBIAuthentication: PowerBIAuthentication): Unit = {
 
-      var authenticationToken: String = powerBIAuthentication.getAccessToken()
+      var authenticationToken: String = powerBIAuthentication.getAccessToken
 
       dataFrame.foreachPartition { partition =>
 
@@ -85,18 +85,18 @@ object DataFrameExtensions {
     def countTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                                powerBIAuthentication: PowerBIAuthentication): Unit = {
 
-      val currentTimestamp = new Timestamp(new Date().getTime())
+      val currentTimestamp = new Timestamp(new Date().getTime)
 
       val  powerbiRow = Map(powerbiTable.columns.head.name -> currentTimestamp,
         powerbiTable.columns(1).name -> dataFrame.count())
 
       try {
 
-        PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken())
+        PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken)
       }
       catch {
 
-        case e: Exception => println("Exception inserting row: " + e.getMessage())
+        case e: Exception => println("Exception inserting row: " + e.getMessage)
       }
     }
   }

@@ -22,7 +22,7 @@ import org.apache.http.impl.client.{HttpClients, CloseableHttpClient}
 
 object HttpClientUtils {
 
-  def getCustomHttpClient(): CloseableHttpClient = {
+  def getCustomHttpClient: CloseableHttpClient = {
 
      val customRequestConfig: RequestConfig = RequestConfig.custom()
       .setSocketTimeout(PowerBIClientConstants.sockectTimeoutInSeconds * 1000)

@@ -26,7 +26,7 @@ import com.microsoft.azure.powerbi.models._
 import com.microsoft.azure.powerbi.common._
 import com.microsoft.azure.powerbi.exceptions._
 
-import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder}
+import org.apache.http.impl.client.CloseableHttpClient
 
 object PowerBITileClient {
 
@@ -53,7 +53,7 @@ object PowerBITileClient {
 
     getRequest.addHeader("Authorization", f"Bearer $authenticationToken")
 
-    val httpClient: CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
+    val httpClient: CloseableHttpClient = HttpClientUtils.getCustomHttpClient
 
     var responseContent: String = null
     var statusCode: Int = -1
@@ -62,15 +62,15 @@ object PowerBITileClient {
     try {
 
       val httpResponse = httpClient.execute(getRequest)
-      statusCode = httpResponse.getStatusLine().getStatusCode()
+      statusCode = httpResponse.getStatusLine.getStatusCode
 
-      val responseEntity = httpResponse.getEntity()
+      val responseEntity = httpResponse.getEntity
 
       if (responseEntity != null) {
 
-        val inputStream = responseEntity.getContent()
+        val inputStream = responseEntity.getContent
         responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
-        inputStream.close
+        inputStream.close()
       }
     }
     catch {
@@ -87,6 +87,6 @@ object PowerBITileClient {
       return read[PowerBITileDetailsList](responseContent)
     }
 
-    throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)
+    throw PowerBIClientException(statusCode, responseContent, exceptionMessage)
   }
 }

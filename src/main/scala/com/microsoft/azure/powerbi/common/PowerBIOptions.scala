@@ -21,4 +21,7 @@ object PowerBIOptions extends Enumeration {
 
   type DatasetRetentionPolicy = Value
   val Undefined, None, basicFIFO = Value
+
+  type DatasetDiplayMode = Value
+  val Push, Streaming, PushStreaming = Value
 }

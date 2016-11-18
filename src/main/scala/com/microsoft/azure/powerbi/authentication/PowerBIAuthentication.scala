@@ -30,17 +30,17 @@ import com.microsoft.aad.adal4j.{AuthenticationContext, AuthenticationResult}
                                   powerBIPassword: String
                                 ) {
 
-   def getAccessToken(): String = {
+   def getAccessToken: String = {
 
-     getToken().getAccessToken()
+     getToken.getAccessToken()
   }
 
    def refreshAccessToken(): String = {
 
-     getToken().getRefreshToken()
+     getToken.getRefreshToken()
    }
 
-   private def getToken(): AuthenticationResult ={
+   private def getToken: AuthenticationResult ={
 
      var authenticationResult: AuthenticationResult = null
 

@@ -17,10 +17,13 @@
 
 package com.microsoft.azure.powerbi.models
 
+import com.microsoft.azure.powerbi.common.PowerBIOptions
+
 case class column(name: String, dataType: String)
 
 case class table(name: String, columns: List[column])
 
-case class PowerBIDataset(name: String, tables: List[table])
+case class PowerBIDataset(name: String, tables: List[table],
+                          defaultMode: String = PowerBIOptions.PushStreaming.toString)
 
 case class PowerBIRows(rows: List[Map[String, Any]])

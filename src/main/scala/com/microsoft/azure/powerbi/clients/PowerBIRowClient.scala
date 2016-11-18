@@ -27,7 +27,7 @@ import com.microsoft.azure.powerbi.models._
 import com.microsoft.azure.powerbi.common._
 import com.microsoft.azure.powerbi.exceptions._
 
-import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder}
+import org.apache.http.impl.client.CloseableHttpClient
 
 object PowerBIRowClient {
 
@@ -58,7 +58,7 @@ object PowerBIRowClient {
 
     postRequest.setEntity(new StringEntity(write(powerBIRows)))
 
-    val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
+    val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient
 
     var responseContent: String = null
     var statusCode: Int = -1
@@ -66,15 +66,15 @@ object PowerBIRowClient {
 
     try {
       val httpResponse = httpClient.execute(postRequest)
-      statusCode = httpResponse.getStatusLine().getStatusCode()
+      statusCode = httpResponse.getStatusLine.getStatusCode
 
-      val responseEntity = httpResponse.getEntity()
+      val responseEntity = httpResponse.getEntity
 
       if (responseEntity != null) {
 
-        val inputStream = responseEntity.getContent()
+        val inputStream = responseEntity.getContent
         responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
-        inputStream.close
+        inputStream.close()
       }
     }
     catch {
@@ -91,7 +91,7 @@ object PowerBIRowClient {
       return responseContent
     }
 
-    throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)
+    throw PowerBIClientException(statusCode, responseContent, exceptionMessage)
   }
 
   def delete(tableName: String, datasetId: String, authenticationToken: String, groupId: String = null): String = {
@@ -117,7 +117,7 @@ object PowerBIRowClient {
 
     deleteRequest.addHeader("Authorization", f"Bearer $authenticationToken")
 
-    val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient()
+    val httpClient : CloseableHttpClient = HttpClientUtils.getCustomHttpClient
 
     var responseContent: String = null
     var statusCode: Int = -1
@@ -125,15 +125,15 @@ object PowerBIRowClient {
 
     try {
       val httpResponse = httpClient.execute(deleteRequest)
-      statusCode = httpResponse.getStatusLine().getStatusCode()
+      statusCode = httpResponse.getStatusLine.getStatusCode
 
-      val responseEntity = httpResponse.getEntity()
+      val responseEntity = httpResponse.getEntity
 
       if (responseEntity != null) {
 
-        val inputStream = responseEntity.getContent()
+        val inputStream = responseEntity.getContent
         responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
-        inputStream.close
+        inputStream.close()
       }
     }
     catch {
@@ -151,6 +151,6 @@ object PowerBIRowClient {
       return responseContent
     }
 
-    throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)
+    throw PowerBIClientException(statusCode, responseContent, exceptionMessage)
   }
 }

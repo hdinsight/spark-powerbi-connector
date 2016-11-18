@@ -47,7 +47,7 @@ object PairedDStreamExtensions {
 
           try {
 
-            PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken())
+            PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken)
           }
           catch {
 
