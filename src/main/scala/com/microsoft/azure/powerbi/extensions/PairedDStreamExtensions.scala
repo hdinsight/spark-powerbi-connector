@@ -36,26 +36,41 @@ object PairedDStreamExtensions {
     def stateTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                        powerBIAuthentication: PowerBIAuthentication): Unit = {
 
+      var authenticationToken: String = powerBIAuthentication.getAccessToken
+
       dStream.foreachRDD(x => {
 
         if (x.count() > 0) {
 
-          val currentTimestamp = new Timestamp(new Date().getTime())
+          val currentTimestamp = new Timestamp(new Date().getTime)
 
           val powerbiRow = Map(powerbiTable.columns.head.name -> currentTimestamp,
             powerbiTable.columns(1).name -> x.first()._2)
 
-          try {
+          var attemptCount = 0
+          var pushSuccessful = false
 
-            PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken)
-          }
-          catch {
+          while (!pushSuccessful && attemptCount < this.retryCount) {
+            try {
 
-            case e: Exception => println("Exception inserting row: " + e.getMessage())
+              PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, authenticationToken)
+              pushSuccessful = true
+            }
+            catch {
+
+              case e: Exception => println("Exception inserting row: " + e.getMessage)
+                Thread.sleep(secondsBetweenRetry * 1000)
+                attemptCount += 1
+
+                authenticationToken = powerBIAuthentication.refreshAccessToken
+            }
           }
         }
       })
     }
+
+    private val retryCount: Int = 3
+    private val secondsBetweenRetry: Int = 1
   }
 }
 

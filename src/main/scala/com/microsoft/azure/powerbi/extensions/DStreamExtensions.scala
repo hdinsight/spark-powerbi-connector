@@ -27,7 +27,6 @@ import org.apache.spark.streaming.dstream.DStream
 
 import com.microsoft.azure.powerbi.models.{table, PowerBIDatasetDetails}
 import scala.collection.mutable.ListBuffer
-import scala.reflect.ClassTag
 
 object DStreamExtensions {
 
@@ -79,18 +78,23 @@ object DStreamExtensions {
                     }
                   }
 
-                  try {
+                  var attemptCount = 0
+                  var pushSuccessful = false
 
-                    PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable, powerbiRowList,
-                      authenticationToken)
-                  }
-                  catch {
+                  while (!pushSuccessful && attemptCount < this.retryCount) {
+                    try {
 
-                    case e: Exception => {
+                      PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable, powerbiRowList,
+                          authenticationToken)
+                      pushSuccessful = true
+                    }
+                    catch {
 
-                      println("Exception inserting multiple rows: " + e.getMessage)
+                      case e: Exception => println("Exception inserting multiple rows: " + e.getMessage)
+                        Thread.sleep(secondsBetweenRetry * 1000)
+                        attemptCount += 1
 
-                      authenticationToken = powerBIAuthentication.refreshAccessToken()
+                        authenticationToken = powerBIAuthentication.refreshAccessToken
                     }
                   }
                 }
@@ -104,6 +108,8 @@ object DStreamExtensions {
     def countTimelineToPowerBI(powerbiDatasetDetails: PowerBIDatasetDetails, powerbiTable: table,
                                powerBIAuthentication: PowerBIAuthentication): Unit = {
 
+      var authenticationToken: String = powerBIAuthentication.getAccessToken
+
       dStream.foreachRDD {
 
         rdd => {
@@ -113,17 +119,30 @@ object DStreamExtensions {
           val powerbiRow = Map(powerbiTable.columns.head.name -> currentTimestamp,
             powerbiTable.columns(1).name -> rdd.count())
 
-          try {
+          var attemptCount = 0
+          var pushSuccessful = false
 
-            PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, powerBIAuthentication.getAccessToken)
-          }
-          catch {
+          while (!pushSuccessful && attemptCount < this.retryCount) {
+            try {
 
-            case e: Exception => println("Exception inserting row: " + e.getMessage)
+              PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, authenticationToken)
+              pushSuccessful = true
+            }
+            catch {
+
+              case e: Exception => println("Exception inserting row: " + e.getMessage)
+                Thread.sleep(secondsBetweenRetry * 1000)
+                attemptCount += 1
+
+                authenticationToken = powerBIAuthentication.refreshAccessToken
+            }
           }
         }
       }
     }
+
+    private val retryCount: Int = 3
+    private val secondsBetweenRetry: Int = 1
   }
 }
 

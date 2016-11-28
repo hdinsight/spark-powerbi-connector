@@ -30,17 +30,12 @@ import com.microsoft.aad.adal4j.{AuthenticationContext, AuthenticationResult}
                                   powerBIPassword: String
                                 ) {
 
-   def getAccessToken: String = {
+   def getAccessToken: String = if (this.accessToken != null && this.accessToken.nonEmpty) this.accessToken
+     else refreshAccessToken
 
-     getToken.getAccessToken()
-  }
+   def refreshAccessToken: String = retrieveToken.getAccessToken
 
-   def refreshAccessToken(): String = {
-
-     getToken.getRefreshToken()
-   }
-
-   private def getToken: AuthenticationResult ={
+   private def retrieveToken: AuthenticationResult = {
 
      var authenticationResult: AuthenticationResult = null
 
@@ -68,6 +63,10 @@ import com.microsoft.aad.adal4j.{AuthenticationContext, AuthenticationResult}
        throw new ServiceUnavailableException("Authentication result empty")
      }
 
+     this.accessToken = authenticationResult.getAccessToken
+
      authenticationResult
    }
+
+   private var accessToken: String = _
 }
