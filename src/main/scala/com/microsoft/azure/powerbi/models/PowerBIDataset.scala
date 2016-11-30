@@ -24,6 +24,9 @@ case class column(name: String, dataType: String)
 case class table(name: String, columns: List[column])
 
 case class PowerBIDataset(name: String, tables: List[table],
-                          defaultMode: String = PowerBIOptions.PushStreaming.toString)
+                          defaultMode: String = PowerBIOptions.Push.toString)
+
+case class PowerBIStreamingDataset(name: String, tables: List[table],
+                                   defaultMode: String = PowerBIOptions.PushStreaming.toString)
 
 case class PowerBIRows(rows: List[Map[String, Any]])

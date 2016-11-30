@@ -87,7 +87,7 @@ object PowerBITableClient {
       return read[PowerBITableDetailsList](responseContent)
     }
 
-    throw new PowerBIClientException(statusCode, responseContent, exceptionMessage)
+    throw PowerBIClientException(statusCode, responseContent, exceptionMessage)
   }
 
   def updateSchema(powerBITable: table, datasetId: String, authenticationToken: String,

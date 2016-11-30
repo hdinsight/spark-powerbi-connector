@@ -35,10 +35,26 @@ object PowerBIUtils {
   }
 
   def createDataset(powerbiDatasetName: String, powerbiTables: List[table],
-                    retentionPolicy: PowerBIOptions.DatasetRetentionPolicy = PowerBIOptions.basicFIFO,
+                    retentionPolicy: PowerBIOptions.DatasetRetentionPolicy,
                     authenticationToken: String, groupId: String = null): PowerBIDatasetDetails = {
 
     val powerbiDataset: PowerBIDataset = PowerBIDataset(powerbiDatasetName, powerbiTables)
+
+    val powerbiDatasetDetails: PowerBIDatasetDetails = PowerBIDatasetClient.create(powerbiDataset, retentionPolicy,
+      authenticationToken, groupId)
+
+    println("Id: " + powerbiDatasetDetails.id + " Name: " + powerbiDatasetDetails.name)
+
+    powerbiDatasetDetails
+  }
+
+  def createStreamingDataset(powerbiDatasetName: String, powerbiTable: table,
+                    retentionPolicy: PowerBIOptions.DatasetRetentionPolicy,
+                    authenticationToken: String, groupId: String = null): PowerBIDatasetDetails = {
+
+    val powerbiTables: List[table] = List[table](powerbiTable)
+
+    val powerbiDataset: PowerBIStreamingDataset = PowerBIStreamingDataset(powerbiDatasetName, powerbiTables)
 
     val powerbiDatasetDetails: PowerBIDatasetDetails = PowerBIDatasetClient.create(powerbiDataset, retentionPolicy,
       authenticationToken, groupId)
@@ -57,7 +73,7 @@ object PowerBIUtils {
   }
 
   def getOrCreateDataset(powerbiDatasetName: String, powerbiTables: List[table],
-                         retentionPolicy: PowerBIOptions.DatasetRetentionPolicy = PowerBIOptions.basicFIFO,
+                         retentionPolicy: PowerBIOptions.DatasetRetentionPolicy,
                          authenticationToken: String, groupId: String = null): PowerBIDatasetDetails = {
 
 
@@ -89,6 +105,18 @@ object PowerBIUtils {
     }
 
     createDataset(powerbiDatasetName, powerbiTables, retentionPolicy, authenticationToken, groupId)
+  }
+
+  def getOrCreateStreamingDataset(powerbiDatasetName: String, powerbiTable: table,
+                         retentionPolicy: PowerBIOptions.DatasetRetentionPolicy,
+                         authenticationToken: String, groupId: String = null): PowerBIDatasetDetails = {
+
+    val powerbiDatasetDetails: PowerBIDatasetDetails = getDataset(powerbiDatasetName, authenticationToken, groupId)
+
+    //Skip checking for existing tables by name, streaming dataset does not support it
+
+    if (powerbiDatasetDetails != null) powerbiDatasetDetails
+    else createStreamingDataset(powerbiDatasetName, powerbiTable, retentionPolicy, authenticationToken, groupId)
   }
 
   def addRow(powerbiDatasetDetails: PowerBIDatasetDetails,  powerbiTable: table, columnNameValueMap: Map[String, Any],
