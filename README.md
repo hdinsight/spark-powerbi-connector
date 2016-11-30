@@ -19,7 +19,7 @@ This is the source code of Spark to PowerBI connector using PowerBI REST client.
     <dependency>
       <groupId>com.microsoft.azure</groupId>
       <artifactId>spark-powerbi-connector_2.10</artifactId>
-      <version>0.6.0</version>
+      <version>0.6.1</version>
     </dependency>
     
 ### SBT
@@ -31,5 +31,5 @@ This is the source code of Spark to PowerBI connector using PowerBI REST client.
 
 #### Dependency
     libraryDependencies ++= Seq(
-        "com.microsoft.azure" %% "spark-powerbi-connector" % "0.6.0"
+        "com.microsoft.azure" %% "spark-powerbi-connector" % "0.6.1"
     )
