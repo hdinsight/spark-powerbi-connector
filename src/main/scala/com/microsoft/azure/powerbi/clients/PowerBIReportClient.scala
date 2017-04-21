@@ -17,20 +17,20 @@
 
 package com.microsoft.azure.powerbi.clients
 
-import org.json4s.ShortTypeHints
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization._
-import org.apache.http.client.methods._
-
-import com.microsoft.azure.powerbi.models._
 import com.microsoft.azure.powerbi.common._
 import com.microsoft.azure.powerbi.exceptions._
-
+import com.microsoft.azure.powerbi.models._
+import org.apache.http.client.methods._
 import org.apache.http.impl.client.CloseableHttpClient
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization._
+import org.json4s.ShortTypeHints
 
 object PowerBIReportClient {
 
-  def get(dashboardId: String, authenticationToken: String, groupId: String = null): PowerBIReportDetailsList = {
+  def get(dashboardId: String,
+          authenticationToken: String,
+          groupId: String = null): PowerBIReportDetailsList = {
 
     implicit val formats = Serialization.formats(
       ShortTypeHints(
@@ -41,11 +41,8 @@ object PowerBIReportClient {
     var getRequestURL: String = null
 
     if(groupId == null || groupId.trim.isEmpty) {
-
       getRequestURL = PowerBIURLs.ReportsBeta
-
     } else {
-
       getRequestURL = PowerBIURLs.GroupsBeta + f"/$groupId/reports"
     }
 
@@ -73,16 +70,13 @@ object PowerBIReportClient {
       }
     }
     catch {
-
       case e: Exception => exceptionMessage = e.getMessage
     }
     finally {
-
       httpClient.close()
     }
 
     if (statusCode == 200) {
-
       return read[PowerBIReportDetailsList](responseContent)
     }
 

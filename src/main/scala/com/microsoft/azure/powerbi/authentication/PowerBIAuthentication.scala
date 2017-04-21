@@ -17,56 +17,9 @@
 
 package com.microsoft.azure.powerbi.authentication
 
-import java.util.concurrent.{ExecutorService, Executors, Future}
-import javax.naming.ServiceUnavailableException
+private[powerbi] trait PowerBIAuthentication{
 
-import com.microsoft.aad.adal4j.{AuthenticationContext, AuthenticationResult}
+  def getAccessToken: String
 
- case class PowerBIAuthentication(
-                                  powerBIAuthorityURL: String,
-                                  powerBIResourceURL: String,
-                                  powerBIClientID: String,
-                                  powerBIUsername: String,
-                                  powerBIPassword: String
-                                ) {
-
-   def getAccessToken: String = if (this.accessToken != null && this.accessToken.nonEmpty) this.accessToken
-     else refreshAccessToken
-
-   def refreshAccessToken: String = retrieveToken.getAccessToken
-
-   private def retrieveToken: AuthenticationResult = {
-
-     var authenticationResult: AuthenticationResult = null
-
-     var executorService: ExecutorService = null
-
-     try {
-
-       executorService = Executors.newFixedThreadPool(1)
-
-       val authenticationContext: AuthenticationContext = new AuthenticationContext(powerBIAuthorityURL,
-         true, executorService)
-
-       val authenticationResultFuture: Future[AuthenticationResult] = authenticationContext.acquireToken(
-         powerBIResourceURL, powerBIClientID, powerBIUsername, powerBIPassword, null)
-
-       authenticationResult = authenticationResultFuture.get()
-     }
-     finally
-     {
-       executorService.shutdown()
-     }
-
-     if (authenticationResult == null) {
-
-       throw new ServiceUnavailableException("Authentication result empty")
-     }
-
-     this.accessToken = authenticationResult.getAccessToken
-
-     authenticationResult
-   }
-
-   private var accessToken: String = _
+  def refreshAccessToken: String
 }

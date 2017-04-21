@@ -17,20 +17,20 @@
 
 package com.microsoft.azure.powerbi.clients
 
-import org.json4s.ShortTypeHints
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization._
-import org.apache.http.client.methods._
-
-import com.microsoft.azure.powerbi.models._
 import com.microsoft.azure.powerbi.common._
 import com.microsoft.azure.powerbi.exceptions._
-
+import com.microsoft.azure.powerbi.models._
+import org.apache.http.client.methods._
 import org.apache.http.impl.client.CloseableHttpClient
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization._
+import org.json4s.ShortTypeHints
 
 object PowerBITileClient {
 
-  def get(dashboardId: String, authenticationToken: String, groupId: String = null): PowerBITileDetailsList = {
+  def get(dashboardId: String,
+          authenticationToken: String,
+          groupId: String = null): PowerBITileDetailsList = {
 
     implicit val formats = Serialization.formats(
       ShortTypeHints(

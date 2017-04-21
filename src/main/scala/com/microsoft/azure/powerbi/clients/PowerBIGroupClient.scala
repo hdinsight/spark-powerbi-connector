@@ -17,16 +17,14 @@
 
 package com.microsoft.azure.powerbi.clients
 
+import com.microsoft.azure.powerbi.common._
+import com.microsoft.azure.powerbi.exceptions._
+import com.microsoft.azure.powerbi.models._
+import org.apache.http.client.methods._
+import org.apache.http.impl.client.CloseableHttpClient
 import org.json4s.ShortTypeHints
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization._
-import org.apache.http.client.methods._
-
-import com.microsoft.azure.powerbi.models._
-import com.microsoft.azure.powerbi.common._
-import com.microsoft.azure.powerbi.exceptions._
-
-import org.apache.http.impl.client.CloseableHttpClient
 
 object PowerBIGroupClient {
 
@@ -56,23 +54,19 @@ object PowerBIGroupClient {
       val responseEntity = httpResponse.getEntity
 
       if (responseEntity != null) {
-
         val inputStream = responseEntity.getContent
         responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
         inputStream.close()
       }
     }
-    catch{
-
+    catch {
       case e: Exception => exceptionMessage = e.getMessage
     }
     finally {
-
       httpClient.close()
     }
 
     if (statusCode == 200) {
-
       return read[PowerBIGroupDetailsList](responseContent)
     }
 

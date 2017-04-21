@@ -22,9 +22,9 @@ import java.util.Date
 
 import com.microsoft.azure.powerbi.authentication.PowerBIAuthentication
 import com.microsoft.azure.powerbi.common.PowerBIUtils
-import org.apache.spark.streaming.dstream.DStream
-
 import com.microsoft.azure.powerbi.models.{table, PowerBIDatasetDetails}
+
+import org.apache.spark.streaming.dstream.DStream
 
 object PairedDStreamExtensions {
 
@@ -53,7 +53,8 @@ object PairedDStreamExtensions {
           while (!pushSuccessful && attemptCount < this.retryCount) {
             try {
 
-              PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, authenticationToken)
+              PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable,
+                powerbiRow, authenticationToken)
               pushSuccessful = true
             }
             catch {

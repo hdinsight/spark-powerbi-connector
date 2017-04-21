@@ -18,7 +18,6 @@
 package com.microsoft.azure.powerbi.common
 
 object PowerBIClientConstants {
-
   final val sockectTimeoutInSeconds: Int = 60
   final val connectionTimeoutInSeconds: Int = 60
   final val connectionRequestTimeoutInSeconds: Int = 60

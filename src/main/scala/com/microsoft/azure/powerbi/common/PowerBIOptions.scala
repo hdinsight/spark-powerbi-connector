@@ -18,7 +18,6 @@
 package com.microsoft.azure.powerbi.common
 
 object PowerBIOptions extends Enumeration {
-
   type DatasetRetentionPolicy = Value
   val Undefined, None, basicFIFO = Value
 

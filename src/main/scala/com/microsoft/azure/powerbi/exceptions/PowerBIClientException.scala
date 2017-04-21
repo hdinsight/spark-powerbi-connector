@@ -15,8 +15,11 @@
  * limitations under the License.
  */
 
-package com.microsoft.azure.powerbi.common
+package com.microsoft.azure.powerbi.exceptions
 
-object PowerBIDataTypes extends Enumeration {
-  val Boolean, String, Int64, Double, DateTime = Value
+case class PowerBIClientException(statusCode: Int,
+                                  responseMessage: String,
+                                  exceptionMessage: String)
+  extends Exception(f"Status Code: $statusCode, Response Message: $responseMessage," +
+    f" Exception Message: $exceptionMessage") {
 }

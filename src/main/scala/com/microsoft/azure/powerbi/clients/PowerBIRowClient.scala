@@ -17,21 +17,20 @@
 
 package com.microsoft.azure.powerbi.clients
 
-import org.json4s.ShortTypeHints
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization._
-import org.apache.http.client.methods._
-import org.apache.http.entity.StringEntity
-
-import com.microsoft.azure.powerbi.models._
 import com.microsoft.azure.powerbi.common._
 import com.microsoft.azure.powerbi.exceptions._
-
+import com.microsoft.azure.powerbi.models._
+import org.apache.http.client.methods._
+import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.CloseableHttpClient
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization._
+import org.json4s.ShortTypeHints
 
 object PowerBIRowClient {
 
-  def add(powerBIRows: PowerBIRows, tableName: String, datasetId: String, authenticationToken: String,
+  def add(powerBIRows: PowerBIRows, tableName: String,
+          datasetId: String, authenticationToken: String,
           groupId: String = null): String = {
 
     implicit val formats = Serialization.formats(
@@ -43,11 +42,8 @@ object PowerBIRowClient {
     var postRequestURL: String = null
 
     if(groupId == null || groupId.trim.isEmpty) {
-
       postRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables/$tableName/rows"
-
     } else {
-
       postRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables/$tableName/rows"
     }
 
@@ -71,30 +67,29 @@ object PowerBIRowClient {
       val responseEntity = httpResponse.getEntity
 
       if (responseEntity != null) {
-
         val inputStream = responseEntity.getContent
         responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
         inputStream.close()
       }
     }
     catch {
-
       case e: Exception => exceptionMessage = e.getMessage
     }
     finally {
-
       httpClient.close()
     }
 
     if (statusCode == 200 || statusCode == 201) {
-
       return responseContent
     }
 
     throw PowerBIClientException(statusCode, responseContent, exceptionMessage)
   }
 
-  def delete(tableName: String, datasetId: String, authenticationToken: String, groupId: String = null): String = {
+  def delete(tableName: String,
+             datasetId: String,
+             authenticationToken: String,
+             groupId: String = null): String = {
 
     implicit val formats = Serialization.formats(
       ShortTypeHints(
@@ -105,12 +100,10 @@ object PowerBIRowClient {
     var deleteRequestURL: String = null
 
     if(groupId == null || groupId.trim.isEmpty) {
-
       deleteRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables/$tableName/rows"
-
     } else {
-
-      deleteRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables/$tableName/rows"
+      deleteRequestURL = PowerBIURLs.Groups +
+        f"/$groupId/datasets/$datasetId/tables/$tableName/rows"
     }
 
     val deleteRequest: HttpDelete = new HttpDelete(deleteRequestURL)
@@ -130,24 +123,19 @@ object PowerBIRowClient {
       val responseEntity = httpResponse.getEntity
 
       if (responseEntity != null) {
-
         val inputStream = responseEntity.getContent
         responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
         inputStream.close()
       }
     }
     catch {
-
       case e: Exception => exceptionMessage = e.getMessage
     }
     finally {
-
       httpClient.close()
     }
 
-
     if(statusCode == 200) {
-
       return responseContent
     }
 

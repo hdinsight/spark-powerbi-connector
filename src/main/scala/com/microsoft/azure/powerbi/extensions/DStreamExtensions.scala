@@ -21,12 +21,13 @@ import java.lang.reflect.Field
 import java.sql.Timestamp
 import java.util.Date
 
+import scala.collection.mutable.ListBuffer
+
 import com.microsoft.azure.powerbi.authentication.PowerBIAuthentication
 import com.microsoft.azure.powerbi.common.PowerBIUtils
-import org.apache.spark.streaming.dstream.DStream
-
 import com.microsoft.azure.powerbi.models.{table, PowerBIDatasetDetails}
-import scala.collection.mutable.ListBuffer
+
+import org.apache.spark.streaming.dstream.DStream
 
 object DStreamExtensions {
 
@@ -43,35 +44,24 @@ object DStreamExtensions {
       val powerbiTableColumnNames: List[String] = powerbiTable.columns.map(x => x.name)
 
       dStream.foreachRDD {
-
         rdd => {
-
           rdd.foreachPartition { partition =>
 
-            //PowerBI row limit in single request is 10,000. We limit it to 1000.
+            // PowerBI row limit in single request is 10,000. We limit it to 1000.
 
             partition.grouped(1000).foreach {
-
               group => {
-
                 val powerbiRowList: ListBuffer[Map[String, Any]] = ListBuffer[Map[String, Any]]()
-
                 group.foreach {
-
                   record => {
-
                     powerbiRowList += (Map[String, Any]() /: record.getClass.getDeclaredFields) {
-
                       (objectFieldValueMap: Map[String, Any], objectField: Field) => {
-
                         objectField.setAccessible(true)
 
-                        if (powerbiTableColumnNames.exists(x => x.equalsIgnoreCase(objectField.getName))) {
-
+                        if (powerbiTableColumnNames.exists(x =>
+                          x.equalsIgnoreCase(objectField.getName))) {
                           objectFieldValueMap + (objectField.getName -> objectField.get(record))
-
                         } else {
-
                           objectFieldValueMap
                         }
                       }
@@ -83,14 +73,13 @@ object DStreamExtensions {
 
                   while (!pushSuccessful && attemptCount < this.retryCount) {
                     try {
-
-                      PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable, powerbiRowList,
-                          authenticationToken)
+                      PowerBIUtils.addMultipleRows(powerbiDatasetDetails, powerbiTable,
+                        powerbiRowList, authenticationToken)
                       pushSuccessful = true
                     }
                     catch {
-
-                      case e: Exception => println("Exception inserting multiple rows: " + e.getMessage)
+                      case e: Exception => println("Exception inserting multiple rows: " +
+                        e.getMessage)
                         Thread.sleep(secondsBetweenRetry * 1000)
                         attemptCount += 1
 
@@ -111,9 +100,7 @@ object DStreamExtensions {
       var authenticationToken: String = powerBIAuthentication.getAccessToken
 
       dStream.foreachRDD {
-
         rdd => {
-
           val currentTimestamp = new Timestamp(new Date().getTime)
 
           val powerbiRow = Map(powerbiTable.columns.head.name -> currentTimestamp,
@@ -124,12 +111,11 @@ object DStreamExtensions {
 
           while (!pushSuccessful && attemptCount < this.retryCount) {
             try {
-
-              PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable, powerbiRow, authenticationToken)
+              PowerBIUtils.addRow(powerbiDatasetDetails, powerbiTable,
+                powerbiRow, authenticationToken)
               pushSuccessful = true
             }
             catch {
-
               case e: Exception => println("Exception inserting row: " + e.getMessage)
                 Thread.sleep(secondsBetweenRetry * 1000)
                 attemptCount += 1

@@ -17,17 +17,15 @@
 
 package com.microsoft.azure.powerbi.clients
 
-import org.json4s.ShortTypeHints
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization._
-import org.apache.http.client.methods._
-import org.apache.http.entity.StringEntity
-
-import com.microsoft.azure.powerbi.models._
 import com.microsoft.azure.powerbi.common._
 import com.microsoft.azure.powerbi.exceptions._
-
+import com.microsoft.azure.powerbi.models._
+import org.apache.http.client.methods._
+import org.apache.http.entity.StringEntity
 import org.apache.http.impl.client.CloseableHttpClient
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization._
+import org.json4s.ShortTypeHints
 
 object PowerBIDatasetClient {
 
@@ -104,7 +102,8 @@ object PowerBIDatasetClient {
     create(new StringEntity(write(powerBIDataset)), retentionPolicy, authenticationToken, groupId)
   }
 
-  def create(powerBIStreamingDataset: PowerBIStreamingDataset, retentionPolicy: PowerBIOptions.DatasetRetentionPolicy,
+  def create(powerBIStreamingDataset: PowerBIStreamingDataset,
+             retentionPolicy: PowerBIOptions.DatasetRetentionPolicy,
              authenticationToken: String, groupId: String): PowerBIDatasetDetails = {
 
     implicit val formats = Serialization.formats(
@@ -113,32 +112,26 @@ object PowerBIDatasetClient {
       )
     )
 
-    create(new StringEntity(write(powerBIStreamingDataset)), retentionPolicy, authenticationToken, groupId)
+    create(new StringEntity(write(powerBIStreamingDataset)),
+      retentionPolicy, authenticationToken, groupId)
   }
 
-  private def create(postRequestEntity: StringEntity, retentionPolicy: PowerBIOptions.DatasetRetentionPolicy,
+  private def create(postRequestEntity: StringEntity,
+                     retentionPolicy: PowerBIOptions.DatasetRetentionPolicy,
                      authenticationToken: String, groupId: String): PowerBIDatasetDetails = {
 
     var postRequestURL: String = null
 
     if(groupId == null || groupId.trim.isEmpty) {
-
       postRequestURL = PowerBIURLs.Datasets
-
     } else {
-
       postRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets"
     }
 
     if(retentionPolicy != null) {
-
       retentionPolicy match {
-
-        case PowerBIOptions.None | PowerBIOptions.basicFIFO => {
-
+        case PowerBIOptions.None | PowerBIOptions.basicFIFO =>
           postRequestURL += f"?defaultRetentionPolicy=" + retentionPolicy.toString
-
-        }
       }
     }
 
@@ -156,7 +149,6 @@ object PowerBIDatasetClient {
     var exceptionMessage: String = null
 
     try {
-
       val httpResponse = httpClient.execute(postRequest)
       statusCode = httpResponse.getStatusLine.getStatusCode
 
@@ -170,7 +162,6 @@ object PowerBIDatasetClient {
       }
     }
     catch {
-
       case e: Exception => exceptionMessage = e.getMessage
     }
     finally {

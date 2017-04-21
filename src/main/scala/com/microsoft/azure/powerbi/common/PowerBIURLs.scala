@@ -18,7 +18,6 @@
 package com.microsoft.azure.powerbi.common
 
 object PowerBIURLs {
-
   val Resource = "https://analysis.windows.net/powerbi/api"
   val Authority = "https://login.windows.net/common/oauth2/authorize"
   val Datasets = "https://api.powerbi.com/v1.0/myorg/datasets"
@@ -26,5 +25,4 @@ object PowerBIURLs {
   val DashboardsBeta = "https://api.powerbi.com/beta/myorg/dashboards"
   val GroupsBeta = "https://api.powerbi.com/beta/myorg/groups"
   val ReportsBeta = "https://api.powerbi.com/beta/myorg/reports"
-
 }

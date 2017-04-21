@@ -17,30 +17,27 @@
 
 package com.microsoft.azure.powerbi.clients
 
-import org.json4s.ShortTypeHints
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization._
-import org.apache.http.client.methods._
-import org.apache.http.entity.StringEntity
-
-import com.microsoft.azure.powerbi.models._
 import com.microsoft.azure.powerbi.common._
 import com.microsoft.azure.powerbi.exceptions._
-
-import org.apache.http.impl.client.{CloseableHttpClient, HttpClientBuilder}
+import com.microsoft.azure.powerbi.models._
+import org.apache.http.client.methods._
+import org.apache.http.entity.StringEntity
+import org.apache.http.impl.client.CloseableHttpClient
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization._
+import org.json4s.ShortTypeHints
 
 object PowerBITableClient {
 
-  def get(datasetId: String, authenticationToken: String, groupId: String = null): PowerBITableDetailsList = {
+  def get(datasetId: String,
+          authenticationToken: String,
+          groupId: String = null): PowerBITableDetailsList = {
 
     var getRequestURL: String = null
 
     if(groupId == null || groupId.trim.isEmpty) {
-
       getRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables"
-
     } else {
-
       getRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables"
     }
 
@@ -61,23 +58,19 @@ object PowerBITableClient {
       val responseEntity = httpResponse.getEntity
 
       if (responseEntity != null) {
-
         val inputStream = responseEntity.getContent
         responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
         inputStream.close()
       }
     }
     catch {
-
       case e: Exception => exceptionMessage = e.getMessage
     }
     finally {
-
       httpClient.close()
     }
 
     if(statusCode == 200) {
-
       implicit val formats = Serialization.formats(
         ShortTypeHints(
           List()
@@ -100,15 +93,12 @@ object PowerBITableClient {
     )
 
     var postRequestURL: String = null
-
     val tableName: String = powerBITable.name
 
     if(groupId == null || groupId.trim.isEmpty) {
-
       postRequestURL = PowerBIURLs.Datasets + s"/$datasetId/tables/$tableName"
 
     } else {
-
       postRequestURL = PowerBIURLs.Groups + f"/$groupId/datasets/$datasetId/tables/$tableName"
     }
 
@@ -126,30 +116,25 @@ object PowerBITableClient {
     var exceptionMessage: String = null
 
     try {
-
       val httpResponse = httpClient.execute(putRequest)
       statusCode = httpResponse.getStatusLine.getStatusCode
 
       val responseEntity = httpResponse.getEntity
 
       if (responseEntity != null) {
-
         val inputStream = responseEntity.getContent
         responseContent = scala.io.Source.fromInputStream(inputStream).getLines.mkString
         inputStream.close()
       }
     }
     catch {
-
       case e: Exception => exceptionMessage = e.getMessage
     }
     finally {
-
       httpClient.close()
     }
 
     if(statusCode == 200 || statusCode == 201) {
-
       return read[PowerBITableDetails](responseContent)
     }
 
