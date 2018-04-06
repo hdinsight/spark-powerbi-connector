@@ -51,7 +51,7 @@ object DataFrameExtensions {
               record => {
                 var powerbiRow: Map[String, Any] = Map[String, Any]()
 
-                for (i <- 0 until record.length - 1) {
+                for (i <- 0 until record.length) {
                   powerbiRow += (powerbiTable.columns(i).name -> record(i))
                 }
 
